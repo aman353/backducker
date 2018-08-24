@@ -1,0 +1,54 @@
+clear
+close all
+clc
+
+im=imread('DSCF0646.jpg');
+figure,imshow(im);title('input image');
+im_g=im(:,:,2);
+figure,imshow(im_g);title('green channel image');
+im_g=histeq(im_g);
+figure,imshow(im_g);title('equalized green channel image');
+BW=imbinarize(im_g);
+figure,imshow(BW);title('binary image');
+CC=bwconncomp(BW);
+count=zeros(1,CC.NumObjects);
+for i=1:CC.NumObjects
+    count(i)=numel(CC.PixelIdxList{i});
+end
+[~,loc]=sort(count,'descend');
+BWW=zeros(size(BW));
+for i=1:6
+    BWW(CC.PixelIdxList{loc(i)})=1;
+end
+figure,imshow(BWW);title('BW separated connected components');
+BW_erode=BWW;
+for i=1:10
+    BW_erode=imerode(BW_erode,ones(5));
+end
+BW_crop=BW_erode;
+BW_weed= BWW==1 & BW_erode==0;
+locs_crop=find(BW_crop~=1);
+locs_weed=find(BW_weed~=1);
+im_crop=im;
+im_weed=im;
+
+for i=1:3
+    imgc=im_crop(:,:,i);imgc(locs_crop)=0;im_crop(:,:,i)=imgc;
+    imgw=im_weed(:,:,i);imgw(locs_weed)=0;im_weed(:,:,i)=imgw;
+end
+% figure,
+% subplot(2,2,1);imshow(BW_crop);
+% subplot(2,2,2);imshow(BW_weed);
+% subplot(2,2,3);imshow(im_crop);
+% subplot(2,2,4);imshow(im_weed);
+
+
+figure,imshow(BW_crop);title('BW crop image');
+figure,imshow(BW_weed);title('BW weed image');
+figure,imshow(im_crop);title('binary image');
+figure,imshow(im_weed);
+
+
+
+
+
